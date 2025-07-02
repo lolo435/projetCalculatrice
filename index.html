@@ -37,13 +37,23 @@
 
   <script>
     let current = "0";
-    let previous = null;      // opérande 1
-    let op = null;             // opérateur choisi
-    let resetNext = false;     // flag de reset
+    let previous = null;
+    let op = null;
+    let resetNext = false;
 
     const displayEl = document.getElementById('display');
 
+    function updateDisplay() {
+      displayEl.textContent = current;
+    }
+
     function appendDigit(d) {
+      if (resetNext) {
+        current = (d === ".") ? "0." : d;
+        resetNext = false;
+        return updateDisplay();
+      }
+
       if (current === "0" && d !== ".") {
         current = d;
       } else if (d === "." && current.includes(".")) {
@@ -51,92 +61,82 @@
       } else {
         current += d;
       }
+      updateDisplay();
     }
 
-    function updateDisplay() {
-      displayEl.textContent = current;
-    }
+    function chooseOp(o) {
+      if (op !== null && !resetNext) {
+        compute();
+      }
 
-    updateDisplay(); // affiche 0 au démarrage
+      previous = parseFloat(current);
+      op = o;
+      resetNext = true;
+    }
 
     function compute() {
-      const cur = parseFloat(current);         // convertit la chaîne actuelle
-      if (op === null || previous === null) return;  // rien à faire
+      if (op === null || previous === null) return;
+
+      const cur = parseFloat(current);
       let res;
+
       switch (op) {
         case '+': res = previous + cur; break;
         case '-': res = previous - cur; break;
         case '*': res = previous * cur; break;
         case '/':
-          res = (cur === 0) ? 'Erreur' : previous / cur;
+          if (cur === 0) {
+            current = "Erreur";
+            updateDisplay();
+            return;
+          }
+          res = previous / cur;
           break;
       }
 
-      current = res.toString();   // prépare l’affichage
-      op = null;                  // reset opérateur
-      previous = null;            // reset opérande
-      resetNext = true;           // prochain chiffre écrase
+      current = res.toString();
+      previous = null;
+      op = null;
+      resetNext = true;
+      updateDisplay();
     }
 
     function clearAll() {
-      // Remet l'affichage à "0"
       current = "0";
-      // Réinitialise les opérandes et l'opérateur
       previous = null;
       op = null;
-      // Désactive le flag de reset
       resetNext = false;
-    }
-
-    function chooseOp(o) {
-      // Si un opérateur existait, effectue d'abord le calcul
-      if (op !== null) compute();
-      // Mémorise la valeur actuelle convertie en nombre
-      previous = parseFloat(current);
-      // Stocke l'opérateur choisi
-      op = o;
-      // Indique que l'affichage doit être écrasé au prochain chiffre
-      resetNext = true;
-    }
-
-    function updateDisplay() {
-      displayEl.textContent = current;
-    }
-    
-
-
-    document.querySelector('button[data-op]').addEventListener('click', () => {
-      chooseOp(btn.dataset.op);
-    });
-
-    document.getElementById('equal').addEventListener('click', () => {
-      compute();
       updateDisplay();
-    });
+    }
 
-    document.getElementById('clear').addEventListener('click', () => {
-      clearAll();
-      updateDisplay();
-    });
-
+    // Gestion des boutons numériques
     document.querySelectorAll('button[data-num]').forEach(btn => {
       btn.addEventListener('click', () => {
         appendDigit(btn.dataset.num);
-        updateDisplay();
       });
     });
 
-    document.getElementById('inc').addEventListener('click', () => {
-      count++;
-      updateDisplay();
-    });
-    document.getElementById('dec').addEventListener('click', () => {
-      count--;
-      updateDisplay();
+    // Gestion des opérateurs
+    document.querySelectorAll('button[data-op]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        chooseOp(btn.dataset.op);
+      });
     });
 
+    // Bouton égal
+    document.getElementById('equal').addEventListener('click', () => {
+      compute();
+    });
 
+    // Bouton C
+    document.getElementById('clear').addEventListener('click', () => {
+      clearAll();
+    });
+
+    // Initialiser l'affichage
+    updateDisplay();
   </script>
+
 </body>
 
 </html>
