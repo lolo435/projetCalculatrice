@@ -35,15 +35,14 @@
         </div>
     </div>
 
-    <div id="display">0</div>
- <button data-num="1">1</button>
- <button data-num="2">2</button>
- <button data-num=".">.</button>
-
+  
 
 
     <script>
  let current = "0";
+  let previous =  null;      // opérande 1
+ let op = null;             // opérateur choisi
+ let resetNext = false;     // flag de reset
  const displayEl = document.getElementById('display');
 
   function appendDigit(d) {
